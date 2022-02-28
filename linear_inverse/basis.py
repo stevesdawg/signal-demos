@@ -6,7 +6,7 @@ from scipy import signal
 
 
 def fourier_series_basis(T, N, t_step=0.05):
-    """Generate fourier basis over interval T.
+    """Generate Fourier basis matrix over interval T.
     Basis vectors are stored in columns.
 
     Args:
@@ -33,7 +33,7 @@ def fourier_series_basis(T, N, t_step=0.05):
 
 
 def generate_psi_n(t, n, N, T):
-    """Generate a single fourier series basis vector.
+    """Generate a single Fourier series basis vector.
 
     Args:
         t (np.ndarray): 1D array representing time axis.
@@ -62,6 +62,26 @@ def generate_psi_n(t, n, N, T):
     return psi_n
 
 
+def generate_val(t, n, N, T):
+    """Generate a single value in the MxN Fourier basis matrix. Given t and N.
+
+    Args:
+        t (float): Single time sample to compute value.
+        n (int): n'th basis vector.
+        N (int): Total number of basis vectors N. Must be Odd.
+        T (int): Endpoint of the time interval of the signal.
+
+    Returns:
+        _type_: _description_
+    """
+    if n == 1:
+        return 1
+    elif n <= (N + 1) // 2:
+        return np.cos(2 * np.pi * (n - 1) / T * t)
+    elif n >= (N + 3) // 2:
+        return np.sin(2 * np.pi * (n - (N + 1) // 2) / T * t)
+
+
 def plot_basis(psi_mat, show):
     fig = go.Figure()
     for n in range(psi_mat.shape[1] // 2):
@@ -82,16 +102,6 @@ def reconstruct(coeffs, psi_mat):
     if len(coeffs.shape) == 1:
         coeffs = coeffs.reshape((coeffs.shape[0], 1))
     return psi_mat @ coeffs
-
-
-# generate a single value in the basis matrix. Given t, and N
-def generate_val(t, n, N, T):
-    if n == 1:
-        return 1
-    elif n <= (N + 1) // 2:
-        return np.cos(2 * np.pi * (n - 1) / T * t)
-    elif n >= (N + 3) // 2:
-        return np.sin(2 * np.pi * (n - (N + 1) // 2) / T * t)
 
 
 if __name__ == "__main__":
