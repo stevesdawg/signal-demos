@@ -1,10 +1,11 @@
 import numpy as np
-from scipy import signal
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from scipy import signal
 
-def fourier_series_basis(T, N, t_step = 0.05):
+
+def fourier_series_basis(T, N, t_step=0.05):
     """Generate fourier basis over interval T.
     Basis vectors are stored in columns.
 
@@ -27,7 +28,7 @@ def fourier_series_basis(T, N, t_step = 0.05):
     t = np.arange(0, T, t_step)
     psi = np.zeros((t.shape[0], N))
     for n in range(N):
-        psi[:, n] = generate_psi_n(t, n+1, N, T)
+        psi[:, n] = generate_psi_n(t, n + 1, N, T)
     return psi
 
 
@@ -54,19 +55,19 @@ def generate_psi_n(t, n, N, T):
     psi_n = np.zeros((t.shape[0],))
     if n == 1:
         psi_n[:] = 1
-    elif n <= (N+1) // 2:
-        psi_n[:] = np.cos(2*np.pi * (n-1) / T * t)
-    elif n >= (N+3) // 2:
-        psi_n[:] = np.sin(2*np.pi * (n - (N+1)//2) / T * t)
+    elif n <= (N + 1) // 2:
+        psi_n[:] = np.cos(2 * np.pi * (n - 1) / T * t)
+    elif n >= (N + 3) // 2:
+        psi_n[:] = np.sin(2 * np.pi * (n - (N + 1) // 2) / T * t)
     return psi_n
 
 
 def plot_basis(psi_mat, show):
     fig = go.Figure()
     for n in range(psi_mat.shape[1] // 2):
-        fig.add_trace(go.Scatter(y=psi_mat[:, n+1], mode="lines"))
+        fig.add_trace(go.Scatter(y=psi_mat[:, n + 1], mode="lines"))
     for n in range(psi_mat.shape[1] // 2):
-        fig.add_trace(go.Scatter(y=psi_mat[:, n + (N+1)//2], mode="lines"))
+        fig.add_trace(go.Scatter(y=psi_mat[:, n + (N + 1) // 2], mode="lines"))
     if show:
         fig.show()
 
@@ -87,10 +88,10 @@ def reconstruct(coeffs, psi_mat):
 def generate_val(t, n, N, T):
     if n == 1:
         return 1
-    elif n <=(N+1) // 2:
-        return np.cos(2*np.pi * (n-1) / T * t)
-    elif n >= (N+3) // 2:
-        return np.sin(2*np.pi * (n - (N+1)//2) / T * t)
+    elif n <= (N + 1) // 2:
+        return np.cos(2 * np.pi * (n - 1) / T * t)
+    elif n >= (N + 3) // 2:
+        return np.sin(2 * np.pi * (n - (N + 1) // 2) / T * t)
 
 
 if __name__ == "__main__":
@@ -102,21 +103,18 @@ if __name__ == "__main__":
 
     len_t = psi.shape[0]
     ft = np.zeros((len_t,))
-    ft[0:len_t // 4] = 1
-    ft[len_t // 2: len_t // 4 * 3] = 2
+    ft[0 : len_t // 4] = 1
+    ft[len_t // 2 : len_t // 4 * 3] = 2
     xn = estimate_coeffs(ft, psi)
     ft_hat = reconstruct(xn, psi)
     fig = make_subplots(rows=1, cols=2)
     fig.add_trace(
-        go.Scatter(y=ft_hat[:, 0], name="f(t) projection onto subspace"),
-        row=1, col=1
+        go.Scatter(y=ft_hat[:, 0], name="f(t) proj onto subspace"), row=1, col=1
     )
-    fig.add_trace(
-        go.Scatter(y=ft, mode="lines+markers", name="f(t)"),
-        row=1, col=1
-    )
+    fig.add_trace(go.Scatter(y=ft, mode="lines+markers", name="f(t)"), row=1, col=1)
     fig.add_trace(
         go.Scatter(y=xn[:, 0], mode="lines+markers", name="basis coefficients"),
-        row=1, col=2
+        row=1,
+        col=2,
     )
     fig.show()

@@ -1,9 +1,8 @@
 import time
 import wave
 
-import pyaudio
-
 import config
+import pyaudio
 
 WIDTH = config.WIDTH
 CHANNELS = config.CHANNELS
@@ -15,6 +14,7 @@ CLOSED = False
 pa = pyaudio.PyAudio()
 wf = wave.open("record.wav", "rb")
 
+
 def callback(in_data, frame_count, time_info, status):
     flag = pyaudio.paContinue
     data = wf.readframes(frame_count)
@@ -22,20 +22,23 @@ def callback(in_data, frame_count, time_info, status):
         flag = pyaudio.paComplete
     return data, flag
 
+
 stream = pa.open(
     format=WIDTH,
     channels=CHANNELS,
     rate=RATE,
     input=False,
     output=True,
-    stream_callback=callback
+    stream_callback=callback,
 )
+
 
 def close_all():
     stream.stop_stream()
     stream.close()
     pa.terminate()
     wf.close()
+
 
 def main():
     global CLOSED
@@ -45,6 +48,7 @@ def main():
     except KeyboardInterrupt:
         CLOSED = True
     close_all()
+
 
 if __name__ == "__main__":
     main()
