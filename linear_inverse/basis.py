@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import signal
-import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import plotly.express as px
 
 def fourier_series_basis(T, N, t_step = 0.05):
     """Generate fourier basis over interval T.
@@ -29,8 +31,22 @@ def fourier_series_basis(T, N, t_step = 0.05):
     return psi
 
 
-# generate a single fourier series basis vector
 def generate_psi_n(t, n, N, T):
+    """Generate a single fourier series basis vector.
+
+    Args:
+        t (np.ndarray): 1D array representing time axis.
+        n (int): n'th basis vector to generate.
+        N (int): Total number of basis vectors N. Must be odd.
+        T (int): Endpoint of the time interval of the signal.
+
+    Raises:
+        RuntimeError: N is not odd.
+        RuntimeError: Selected n is out of bounds (non-positive or greater than N).
+
+    Returns:
+        _type_: _description_
+    """
     if N % 2 != 1:
         raise RuntimeError("N is not odd.")
     if n > N or n <= 0:
@@ -46,12 +62,13 @@ def generate_psi_n(t, n, N, T):
 
 
 def plot_basis(psi_mat, show):
+    fig = go.Figure()
     for n in range(psi_mat.shape[1] // 2):
-        plt.plot(psi_mat[:, n + 1])
+        fig.add_trace(go.Scatter(y=psi_mat[:, n+1], mode="lines"))
     for n in range(psi_mat.shape[1] // 2):
-        plt.plot(psi_mat[:, n + (N+1)//2], "--")
+        fig.add_trace(go.Scatter(y=psi_mat[:, n + (N+1)//2], mode="lines"))
     if show:
-        plt.show()
+        fig.show()
 
 
 def estimate_coeffs(f_t, psi_mat):
@@ -78,7 +95,7 @@ def generate_val(t, n, N, T):
 
 if __name__ == "__main__":
     T = 2
-    N = 11
+    N = 101
     tstep = 0.01
     psi = fourier_series_basis(T, N, tstep)
     # plot_basis(psi, show=True)
@@ -89,9 +106,17 @@ if __name__ == "__main__":
     ft[len_t // 2: len_t // 4 * 3] = 2
     xn = estimate_coeffs(ft, psi)
     ft_hat = reconstruct(xn, psi)
-    plt.subplot(121)
-    plt.plot(ft)
-    plt.plot(ft_hat)
-    plt.subplot(122)
-    plt.plot(xn, "-d")
-    plt.show()
+    fig = make_subplots(rows=1, cols=2)
+    fig.add_trace(
+        go.Scatter(y=ft_hat[:, 0], name="f(t) projection onto subspace"),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Scatter(y=ft, mode="lines+markers", name="f(t)"),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Scatter(y=xn[:, 0], mode="lines+markers", name="basis coefficients"),
+        row=1, col=2
+    )
+    fig.show()
