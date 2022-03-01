@@ -1,11 +1,13 @@
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy import signal
 
+SEED = 42
+np.random.seed(SEED)
 
-def fourier_series_basis(T, N, t_step=0.05):
+
+def fourier_series_basis(T, N, t_step=0.05, t=None):
     """Generate Fourier basis matrix over interval T.
     Basis vectors are stored in columns.
 
@@ -13,19 +15,22 @@ def fourier_series_basis(T, N, t_step=0.05):
         T (float): Time interval of signal.
         N (int): Number of basis vectors. Must be odd.
         t_step (float, optional): T_step sample period for time series signal. Defaults to 0.05.
+        t (np.ndarray, optional): t is the specified time samples to evaluate the basis vectors.
+        Defaults to Uniformly spaced time samples.
 
     Raises:
         RuntimeError: Error if T <= 0, non-positive.
         RuntimeError: Error if N is not odd.
 
     Returns:
-        np.ndarray: T/t_stepxN matrix representing N basis vectors over time T.
+        np.ndarray: len(t)xN matrix representing N basis vectors over time T.
     """
     if T <= 0:
         raise RuntimeError("T is non positive.")
     if N % 2 != 1:
         raise RuntimeError("N is not odd.")
-    t = np.arange(0, T, t_step)
+    if t is None:
+        t = np.arange(0, T, t_step)
     psi = np.zeros((t.shape[0], N))
     for n in range(N):
         psi[:, n] = generate_psi_n(t, n + 1, N, T)
@@ -82,6 +87,11 @@ def generate_val(t, n, N, T):
         return np.sin(2 * np.pi * (n - (N + 1) // 2) / T * t)
 
 
+def generate_func(N, lo, hi, psi):
+    xn = (hi - lo) * np.random.random_sample(N) + lo
+    return psi @ xn.reshape((xn.shape[0], 1)), xn
+
+
 def plot_basis(psi_mat, show):
     fig = go.Figure()
     for n in range(psi_mat.shape[1] // 2):
@@ -109,7 +119,6 @@ if __name__ == "__main__":
     N = 101
     tstep = 0.01
     psi = fourier_series_basis(T, N, tstep)
-    # plot_basis(psi, show=True)
 
     len_t = psi.shape[0]
     ft = np.zeros((len_t,))
