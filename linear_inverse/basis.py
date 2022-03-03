@@ -15,7 +15,7 @@ def fourier_series_basis(T, N, t_step=0.05, t=None):
         T (float): Time interval of signal.
         N (int): Number of basis vectors. Must be odd.
         t_step (float, optional): T_step sample period for time series signal. Defaults to 0.05.
-        t (np.ndarray, optional): t is the specified time samples to evaluate the basis vectors.
+        t (np.ndarray, optional): 1D array representing time samples, of length M.
         Defaults to Uniformly spaced time samples.
 
     Raises:
@@ -23,7 +23,7 @@ def fourier_series_basis(T, N, t_step=0.05, t=None):
         RuntimeError: Error if N is not odd.
 
     Returns:
-        np.ndarray: len(t)xN matrix representing N basis vectors over time T.
+        np.ndarray: MxN matrix representing N basis vectors over time T.
     """
     if T <= 0:
         raise RuntimeError("T is non positive.")
@@ -41,7 +41,7 @@ def generate_psi_n(t, n, N, T):
     """Generate a single Fourier series basis vector.
 
     Args:
-        t (np.ndarray): 1D array representing time axis.
+        t (np.ndarray): 1D array representing time axis of length M.
         n (int): n'th basis vector to generate.
         N (int): Total number of basis vectors N. Must be odd.
         T (int): Endpoint of the time interval of the signal.
@@ -51,7 +51,7 @@ def generate_psi_n(t, n, N, T):
         RuntimeError: Selected n is out of bounds (non-positive or greater than N).
 
     Returns:
-        _type_: _description_
+        np.ndarray: 1D array representing a single basis vector, or length M.
     """
     if N % 2 != 1:
         raise RuntimeError("N is not odd.")
@@ -73,11 +73,11 @@ def generate_val(t, n, N, T):
     Args:
         t (float): Single time sample to compute value.
         n (int): n'th basis vector.
-        N (int): Total number of basis vectors N. Must be Odd.
+        N (int): Total number of basis vectors N. Must be odd.
         T (int): Endpoint of the time interval of the signal.
 
     Returns:
-        _type_: _description_
+        float: A single value to populate the PSI[t, n] element of psi matrix.
     """
     if n == 1:
         return 1
@@ -88,6 +88,19 @@ def generate_val(t, n, N, T):
 
 
 def generate_func(N, lo, hi, psi):
+    """Returns a function f(t) that is in the span of columns of psi.
+    Generated using random basis coefficients and then reconstructed.
+
+    Args:
+        N (int): Total number of basis vectors N. Must be Odd.
+        lo (int): Lower bound, above which random basis coefficients will be chosen.
+        hi (int): Upper bound, below which random basis coefficients will be chosen.
+        psi (np.ndarray): MxN psi matrix, whose columns are the basis vectors.
+
+    Returns:
+        np.ndarray: Generated function f(t), 1D sequence of length M.
+        np.ndarray: Generated coefficients x[n], 1D sequence of length N.
+    """
     xn = (hi - lo) * np.random.random_sample(N) + lo
     return psi @ xn.reshape((xn.shape[0], 1)), xn
 
