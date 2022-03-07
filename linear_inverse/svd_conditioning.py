@@ -11,7 +11,10 @@ from plotly.subplots import make_subplots
 """Create matrices with small singular values. Show what happens with noise,
 worst case noise. Show improvement if you truncate the smallest q singular values.
 Show improvement if you use Tikhonov regularization. Show error as function of
-delta parameter.
+delta parameter. In practice, figure out a ratio between largest and smallest
+singular value, or, an absolute threshold for the smallest singular value.
+Because this will cause problems when reconstructing using pseudoinverse.
+TODO: Prove Tikhonov regularization on paper, and then implement it here.
 """
 
 
