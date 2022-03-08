@@ -14,7 +14,6 @@ Show improvement if you use Tikhonov regularization. Show error as function of
 delta parameter. In practice, figure out a ratio between largest and smallest
 singular value, or, an absolute threshold for the smallest singular value.
 Because this will cause problems when reconstructing using pseudoinverse.
-TODO: Prove Tikhonov regularization on paper, and then implement it here.
 """
 
 
@@ -47,7 +46,13 @@ def truncated_matrix(num_omit, U, S, V):
     return U[:, : N - num_omit] @ S[:-num_omit, :-num_omit] @ V[:, : N - num_omit].T
 
 
+def tikhonov_regularize(delta, A):
+    r, c = A.shape
+    return sp.linalg.inv(A.T @ A + np.diag([delta] * c)) @ A.T
+
+
 if __name__ == "__main__":
+    # Generate matrix with 1 bad singular value
     N = 8
     M = 13
     R = 8
@@ -57,7 +62,7 @@ if __name__ == "__main__":
     x = generate_xvec(N, lo, hi)
     sigmas = np.sort(np.random.random((R,)))[::-1]
     sigmas[-1] = min_sigma
-    print(sigmas)
+    print("Singular values: {}\n".format(sigmas))
     A, U, S, V = generate_matrix(sigmas, M, N)
     y = A @ x
     print("y: {}\n".format(y))
@@ -70,6 +75,7 @@ if __name__ == "__main__":
     print("x_hat: {}\n".format(x_hat))
     print("raw x: {}\n".format(x))
 
+    # SVD Truncation
     A_trunc = truncated_matrix(1, U, S, V)
     print(A_trunc.shape)
     A_trunc_pinv = sp.linalg.pinv(A_trunc)
@@ -77,6 +83,15 @@ if __name__ == "__main__":
     x_hat_trunc = A_trunc_pinv @ y
     print("x hat truncated with noise: {}\n".format(x_hat_noise_trunc))
     print("x hat truncated: {}\n".format(x_hat_trunc))
+
+    # Tikhonov Regularization
+    # If bad sigma is less than delta, than delta will dominate
+    delta = 0.006
+    A_tikh_inv = tikhonov_regularize(delta, A)
+    x_hat_noise_tikh = A_tikh_inv @ y_noise
+    x_hat_tikh = A_tikh_inv @ y
+    print("x hat tikhonov with noise: {}\n".format(x_hat_noise_tikh))
+    print("x hat tikhonov: {}\n".format(x_hat_tikh))
 
     fig = make_subplots(rows=1, cols=2)
     fig.add_trace(go.Scatter(y=y, mode="lines", name="Clean y"), row=1, col=1)
@@ -95,7 +110,16 @@ if __name__ == "__main__":
     )
     fig.add_trace(
         go.Scatter(
-            y=x_hat_noise_trunc, mode="lines", name="Reconstructed x from truncated A"
+            y=x_hat_noise_trunc, mode="lines", name="Truncated A Reconstruction of x"
+        ),
+        row=1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            y=x_hat_noise_tikh,
+            mode="lines",
+            name="Tikhonov Regularized Reconstruction of x from noisy Y",
         ),
         row=1,
         col=2,
