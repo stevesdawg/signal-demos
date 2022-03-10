@@ -31,6 +31,12 @@ if __name__ == "__main__":
     y_hat = xdata_rand @ theta_hat
     y_hat_clean = xdata @ theta_hat
 
+    tdata = np.ones((y.shape[0], 2))
+    tdata[:, 1] = t1[:]
+    tdata_pinv = sp.linalg.pinv(tdata)
+    t_theta_hat = tdata_pinv @ yrand
+    yt_hat = tdata @ t_theta_hat
+
     fig = make_subplots(
         rows=1, cols=2, specs=[[{"type": "scatter3d"}, {"type": "scatter"}]]
     )
@@ -77,6 +83,16 @@ if __name__ == "__main__":
             y=y_hat,
             mode="markers",
             name="Best fit against linear parameter t",
+        ),
+        row=1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=t1,
+            y=yt_hat,
+            mode="lines",
+            name="Linear fit only using t as input",
         ),
         row=1,
         col=2,

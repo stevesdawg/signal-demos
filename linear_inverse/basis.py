@@ -102,7 +102,7 @@ def generate_func(N, lo, hi, psi):
         np.ndarray: Generated coefficients x[n], 1D sequence of length N.
     """
     xn = (hi - lo) * np.random.random_sample(N) + lo
-    return psi @ xn.reshape((xn.shape[0], 1)), xn
+    return psi @ xn.reshape(xn.shape[0], 1), xn
 
 
 def plot_basis(psi_mat, show):
@@ -117,13 +117,13 @@ def plot_basis(psi_mat, show):
 
 def estimate_coeffs(f_t, psi_mat):
     if len(f_t.shape) == 1:
-        f_t = f_t.reshape((f_t.shape[0], 1))
+        f_t = f_t.reshape(f_t.shape[0], 1)
     return np.linalg.pinv(psi_mat) @ f_t
 
 
 def reconstruct(coeffs, psi_mat):
     if len(coeffs.shape) == 1:
-        coeffs = coeffs.reshape((coeffs.shape[0], 1))
+        coeffs = coeffs.reshape(coeffs.shape[0], 1)
     return psi_mat @ coeffs
 
 
