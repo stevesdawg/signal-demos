@@ -18,6 +18,16 @@ Because this will cause problems when reconstructing using pseudoinverse.
 
 
 def generate_matrix(sigmas, M, N):
+    """Given a list of singular values (sigmas), generates an MxN matrix.
+
+    Args:
+        sigmas (array-like): List of N singular values, ordered from greatest to least.
+        M (int): Number of rows of final matrix.
+        N (int): Number of columns of final matrix.
+
+    Returns:
+        np.ndarray: MxN matrix with sigmas as singular values.
+    """
     U = sp.stats.ortho_group.rvs(dim=M, random_state=basis.SEED)
     V = sp.stats.ortho_group.rvs(dim=N, random_state=basis.SEED)
     diag_mat = np.diag(sigmas)
@@ -40,6 +50,17 @@ def generate_xvec(N, lo, hi):
 
 
 def truncated_matrix(num_omit, U, S, V):
+    """Returns an MxN matrix with the last num_omit singular values nulled out.
+
+    Args:
+        num_omit (int): Number of singular values to truncate.
+        U (np.ndarray): MxN U array from SVD of original matrix.
+        S (array-like): List of N singular values, ordered from greatest to least.
+        V (np.ndarray): NxN V array from SVD of original matrix.
+
+    Returns:
+        np.ndarray: MxN matrix with last num_omit original singular values nulled out.
+    """
     M = U.shape[0]
     R = U.shape[1]
     N = V.shape[0]
@@ -47,6 +68,18 @@ def truncated_matrix(num_omit, U, S, V):
 
 
 def tikhonov_regularize(delta, A):
+    """Regularizes the A matrix given the delta parameters. Penalizes any singular
+    values less than delta, to better condition the pseudoinverse of A.
+    Rough formula for the singular values of the regularized pseudoinverse:
+    s_pinv = s / (s^2 + delta)
+
+    Args:
+        delta (float): The regularization parameter. Penalizes any sigmas < delta.
+        A (np.ndarary): MxN Original matrix A which we would like to better condition.
+
+    Returns:
+        np.ndarray: NxM Pseudoinverse of the regularized matrix A.
+    """
     r, c = A.shape
     return sp.linalg.inv(A.T @ A + np.diag([delta] * c)) @ A.T
 
