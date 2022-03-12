@@ -52,14 +52,19 @@ if __name__ == "__main__":
     t1 = np.linspace(-2, 10, N, endpoint=False)
     Adata = np.ones((N, 2))
     Adata[:, 1] = t1[:]
+    # Standard Least Squares Computation
+    A_pinv = sp.linalg.pinv(Adata)
+    xhat_ls = A_pinv @ yrand.reshape(yrand.shape[0], 1)
+    yhat_ls = Adata @ xhat_ls
+    print("Entire System Least Squares Fit: {}".format(xhat_ls))
 
-    fig = make_subplots(rows=1, cols=2)
+    # RLS Computation
     y0 = yrand[:3]
     A0 = Adata[:3, :]
     P0 = sp.linalg.inv(A0.T @ A0)
     xhat_0 = P0 @ (A0.T @ y0.reshape((y0.shape[0], 1)))
-    print(xhat_0)
     yhat_0 = Adata @ xhat_0
+    fig = make_subplots(rows=1, cols=2)
     fig.add_trace(
         go.Scatter(
             x=Adata[:, 1],
@@ -80,6 +85,16 @@ if __name__ == "__main__":
         row=1,
         col=1,
     )
+    fig.add_trace(
+        go.Scatter(
+            x=Adata[:, 1],
+            y=yhat_ls[:, 0],
+            mode="lines",
+            name="Standard Least Squares Fit -- full system",
+        ),
+        row=1,
+        col=1,
+    )
 
     all_coeffs = np.zeros((N // step + 1, 2))
     all_coeffs[0, :] = xhat_0[:, 0]
@@ -88,7 +103,7 @@ if __name__ == "__main__":
             yrand[i : i + step], Adata[i : i + step, :], xhat_0, P0
         )
         all_coeffs[i // 3, :] = xhat_k[:, 0]
-        if i % 10 == 0:
+        if i % 18 == 0:
             yhat_k = Adata @ xhat_k
             fig.add_trace(
                 go.Scatter(
@@ -100,6 +115,7 @@ if __name__ == "__main__":
                 row=1,
                 col=1,
             )
+    print("Final Iteration Fit: {}".format(all_coeffs[-1, :]))
     fig.add_trace(
         go.Scatter(
             y=all_coeffs[:, 1],
